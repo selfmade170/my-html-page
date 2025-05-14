@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Master: The Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue background */
+            color: #1e293b; /* Dark blue text */
+        }
+        .game-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #ffffff;
+            border-radius: 16px; /* More rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .character-name {
+            font-weight: 600;
+            color: #4f46e5; /* Purple color for character name */
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-primary {
+            background-color: #4f46e5; /* Purple */
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca; /* Darker purple */
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background-color: #e0e7ff; /* Light purple */
+            color: #4f46e5; /* Purple */
+            border: 1px solid #4f46e5;
+        }
+        .btn-secondary:hover {
+            background-color: #c7d2fe; /* Darker light purple */
+            transform: translateY(-1px);
+        }
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #cbd5e1; /* Gray border */
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            min-height: 100px;
+            resize: vertical;
+            background-color: #f8fafc; /* Very light background for textarea */
+        }
+        .feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        .feedback-good {
+            background-color: #dcfce7; /* Light green */
+            color: #166534; /* Dark green */
+            border-left: 4px solid #22c55e; /* Green stripe */
+        }
+        .feedback-improve {
+            background-color: #fee2e2; /* Light red */
+            color: #991b1b; /* Dark red */
+            border-left: 4px solid #ef4444; /* Red stripe */
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e5e7eb; /* Light gray background for progress bar */
+            border-radius: 9999px; /* Fully rounded */
+            margin-bottom: 1.5rem;
+        }
+        .progress-bar {
+            height: 12px;
+            background-color: #4f46e5; /* Purple */
+            border-radius: 9999px;
+            transition: width 0.5s ease-in-out;
+            text-align: center;
+            color: white;
+            font-size: 0.7rem;
+            line-height: 12px;
+        }
+        /* Element appearance animation */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameArea" class="game-container">
+        </div>
+
+    <script>
+        // Game data: structure of levels, tasks, and texts
+        const gameData = [
+            // Level 0: Introduction
+            {
+                type: "intro",
+                title: "Welcome to the Prompting Academy!",
+                character: "Professor Neuron",
+                icon: "🎓", // Icon for the character
+                text: "Greetings, future Prompt Master! I am Professor Neuron. Together, we will learn to speak the same language as Artificial Intelligence (AI). Are you ready to begin your training?",
+                buttonText: "Yes, Professor! I'm ready!"
+            },
+            // Level 1: Role Prompting
+            {
+                type: "level",
+                level: 1,
+                title: "Level 1: The Art of Role-Playing (Role Prompting)",
+                character: "Professor Neuron",
+                icon: "🎓",
+                explanation: "<strong>Role Prompting</strong> is a technique that allows you to ask the AI to 'wear the hat' of a specific character or expert. The AI is the actor, and you are the director!",
+                tasks: [
+                    {
+                        id: "role_teacher",
+                        instruction: "<strong>Task 1.1: Meeting the Teacher.</strong> Imagine the AI needs to explain 'What is photosynthesis?' to a first-grader. What prompt would you create for the AI to act as an <strong>experienced and kind elementary school teacher</strong>?",
+                        placeholder: "For example: 'Imagine you are a teacher...' ",
+                        feedbackGood: "Excellent prompt! You clearly specified the role. For example: 'Imagine you are an elementary school teacher. Explain in simple terms what photosynthesis is for a 7-year-old child.'",
+                        feedbackImprove: "Not bad, but let's make the role even more explicit. Try adding specifics about what kind of teacher the AI should be. For example, specify for whom the explanation is intended."
+                    },
+                    {
+                        id: "role_friend",
+                        instruction: "<strong>Task 1.2: Friendly Advice.</strong> Now let's ask the AI to be your <strong>friend</strong>. You want advice on what movie (a comedy, not too old) to watch. How would you phrase the prompt?",
+                        placeholder: "For example: 'Hey! As a friend, can you suggest...' ",
+                        feedbackGood: "Wonderful! Your prompt could sound like this: 'Hey! As a friend, could you suggest a cool comedy to watch tonight? Something from recent years, please.'",
+                        feedbackImprove: "Think about how you would address a friend and what details about the movie are important. For example, specify the genre and preferences for the release year."
+                    }
+                ],
+                conclusion: "You're doing great! By clearly specifying the role, you guide the AI. Ready for the next lesson?",
+                buttonText: "Sure! What's next?"
+            },
+            // Level 2: Contextual Prompting
+            {
+                type: "level",
+                level: 2,
+                title: "Level 2: The Magic of Details (Contextual Prompting)",
+                character: "Professor Neuron",
+                icon: "🎓",
+                explanation: "<strong>Contextual Prompting</strong> is like adding colors to a canvas: the more details and context you give the AI, the brighter and more accurate its 'picture'-answer will be.",
+                tasks: [
+                    {
+                        id: "context_story",
+                        instruction: "<strong>Task 2.1: Story with Details.</strong> Improve the prompt 'Write a story' by adding at least 3 contextual elements (e.g., genre, main character, setting, main conflict).",
+                        placeholder: "For example: 'Write a [genre] story about [character] in [place]...' ",
+                        feedbackGood: "Excellent! For example: 'Write a short detective story about a private investigator named Arthur Blackwood, who is investigating the mysterious disappearance of a necklace in 19th-century London.' Feel the difference?",
+                        feedbackImprove: "Try adding a genre (sci-fi, detective), a description of the main character, and the setting so the AI better understands your idea."
+                    },
+                    {
+                        id: "context_recipe",
+                        instruction: "<strong>Task 2.2: Recipe for Success.</strong> Formulate a prompt for the AI asking for an apple pie recipe, adding important context (e.g., difficulty level, available ingredients, dietary preferences).",
+                        placeholder: "For example: 'I need a [difficulty] apple pie recipe with [ingredients]...' ",
+                        feedbackGood: "Great approach! For example: 'I need a simple apple pie recipe for beginner cooks. I have apples, flour, sugar, eggs, and cinnamon. I'd like the pie to be not too sweet.'",
+                        feedbackImprove: "Specify your cooking experience, what ingredients you have, or what kind of pie you want (e.g., less sweet, gluten-free)."
+                    }
+                ],
+                conclusion: "You've learned that details matter! Context is your key to getting the most relevant and useful answers from AI. Shall we move to the next stage?",
+                buttonText: "I'm ready for new knowledge!"
+            },
+            // Level 3: Chain of Thought
+            {
+                type: "level",
+                level: 3,
+                title: "Level 3: Think Step by Step (Chain of Thought)",
+                character: "Master of Puzzles",
+                icon: "🧙", // Icon for the Master
+                explanation: "Greetings! I am the Master of Puzzles. <strong>Chain of Thought</strong> prompting allows you to ask the AI to 'think aloud,' meaning it shows all the steps of its reasoning. This is especially useful for solving complex problems or when you want to understand the AI's logic.",
+                tasks: [
+                    {
+                        id: "cot_logic",
+                        instruction: "<strong>Task 3.1: Logic Puzzle.</strong> Puzzle: 'Anna has 5 apples. She gave 2 apples to Boris, and then Boris gave her 1 pear. How many apples does Anna have left?' Create a prompt for the AI so that it not only gives the answer but also explains each step of its solution.",
+                        placeholder: "For example: 'Solve the problem and explain step by step...' ",
+                        feedbackGood: "Excellent prompt! The AI might respond like this:\n1.  *Initial condition:* Anna had 5 apples.\n2.  *Action 1:* Anna gave 2 apples to Boris. So, the number of apples Anna has decreased: 5 - 2 = 3 apples.\n3.  *Action 2:* Boris gave Anna 1 pear. This action does not affect the number of apples Anna has.\n4.  *Result:* Anna has 3 apples left.\nSee? The AI showed its entire chain of reasoning!",
+                        feedbackImprove: "Use phrases like 'Explain step by step,' 'Show your logic,' or 'Use the chain of thought method' so the AI understands it needs to detail the answer."
+                    },
+                    {
+                        id: "cot_trip",
+                        instruction: "<strong>Task 3.2: Trip Planning.</strong> Imagine you want the AI to help you plan a three-day trip to Paris on a limited budget. How would you ask the AI to create such a plan using 'Chain of Thought' so that it considers the route, transportation, possible daily expenses, and accommodation options?",
+                        placeholder: "For example: 'Plan a 3-day trip to Paris, using chain of thought for...' ",
+                        feedbackGood: "Magnificent! Your prompt could sound like this: 'Help me plan a three-day trip to Paris for one person on a limited budget. Please develop a step-by-step plan (using chain of thought) that includes: 1. Suggestions for inexpensive accommodation. 2. An itinerary of major attractions for each of the three days, considering the logistics of moving between them. 3. Approximate daily expenses for food and transport. 4. Tips on how to save money.' This approach will help the AI create a truly thoughtful and useful plan.",
+                        feedbackImprove: "Ask the AI to consider different aspects step by step: accommodation, daily itinerary, approximate expenses, money-saving tips."
+                    }
+                ],
+                conclusion: "The Master of Puzzles helped you understand the importance of 'Chain of Thought'. This technique turns AI into a true problem-solving partner. Only the last, most creative lesson remains!",
+                buttonText: "I'm excited!"
+            },
+            // Level 4: Virtual Tour Guide
+            {
+                type: "level",
+                level: 4,
+                title: "Level 4: Your Virtual Tour Guide (Fun Activity)",
+                character: "Explorer Guide",
+                icon: "🗺️", // Icon for the Guide
+                explanation: "Hello, traveler! I am the Explorer, your future virtual guide. Now we will combine your knowledge, especially <strong>Role Prompting</strong>, to create something truly interesting – your personal <strong>Virtual Tour Guide</strong>!",
+                tasks: [
+                    {
+                        id: "guide_create",
+                        instruction: "<strong>Task 4.1: Create Your Guide.</strong> Choose any place, real or fictional, that you would like to 'visit' (e.g., Ancient Egypt, Mars, the magical forest of Narnia, a city of the future). Then create a prompt so that the AI (as our Explorer Guide) acts as an <strong>enthusiastic and knowledgeable guide</strong> to this place. It should give you a short welcome tour.",
+                        placeholder: "For example: 'Imagine you are an enthusiastic guide to [place]...' ",
+                        feedbackGood: "Excellent! Now your guide is ready. For example, if you chose Ancient Egypt, it might start like this: 'Welcome, O great traveler, to the lands of pharaohs and pyramids – Ancient Egypt! I am your faithful guide, the Explorer, and I will show you the wonders hidden beneath the sands of time!..'",
+                        feedbackImprove: "Don't forget to specify the place and set the tone for the guide – they should be an enthusiast! The more vividly you describe the role, the more interesting the 'answer' will be."
+                    },
+                    {
+                        id: "guide_question",
+                        instruction: "<strong>Task 4.2: Ask the Guide a Question.</strong> Now, using the context of your 'tour' (the place you chose in the previous task), ask your guide one or two questions about it.",
+                        placeholder: "For example: 'Tell me more about...' or 'What secrets does this place hold?'",
+                        feedbackGood: "Great question! The guide would be happy to answer. For example, to the question 'How were the pyramids built?' they would talk about technologies, workers, and theories, maintaining their enthusiastic tone.",
+                        feedbackImprove: "Formulate a question that would be interesting in the context of your virtual tour. Try to make it open-ended so the guide can give a detailed answer."
+                    }
+                ],
+                conclusion: "Fantastic! You not only created a virtual guide but also successfully interacted with it. This is a great example of how role prompts make communication with AI lively and engaging.",
+                buttonText: "That was great! Finish training."
+            },
+            // Level 5: Conclusion
+            {
+                type: "conclusion",
+                title: "Congratulations, Prompt Master!",
+                character: "Professor Neuron",
+                icon: "🏆", // Icon for the award
+                text: "You have successfully mastered:<ul class='list-disc list-inside mt-2 space-y-1'>" +
+                      "<li><strong>Role Prompting:</strong> Giving AI roles.</li>" +
+                      "<li><strong>Contextual Prompting:</strong> Adding details for accuracy.</li>" +
+                      "<li><strong>Chain of Thought:</strong> Teaching AI to think step by step.</li>" +
+                      "<li>And even <strong>created your own Virtual Tour Guide!</strong></li>" +
+                      "</ul>" +
+                      "<p class='mt-4'>Now you are a true <strong>Prompt Master</strong>! Use these skills to explore the limitless possibilities of Artificial Intelligence.</p>",
+                buttonText: "Start Over"
+            }
+        ];
+
+        // Game state
+        let currentStageIndex = 0; // Index of the current stage (intro, level 1, ..., conclusion)
+        let currentTaskIndex = 0;  // Index of the current task within a level
+
+        const gameArea = document.getElementById('gameArea');
+
+        // Function to display the current stage/level
+        function renderStage() {
+            const stageData = gameData[currentStageIndex];
+            let html = `<div class="fade-in">`; // Add class for animation
+
+            // Progress bar (except for intro and conclusion)
+            if (stageData.type === "level") {
+                const totalLevels = gameData.filter(s => s.type === "level").length;
+                const currentLevelNum = stageData.level;
+                const progressPercent = (currentLevelNum / totalLevels) * 100;
+                html += `
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: ${progressPercent}%"></div>
+                    </div>
+                `;
+            }
+            
+            html += `<div class="text-center mb-4">
+                        <span class="text-3xl mr-2">${stageData.icon || '👤'}</span>
+                        <h2 class="text-2xl font-bold inline align-middle">${stageData.title}</h2>
+                     </div>`;
+            html += `<p class="text-center mb-6"><span class="character-name">${stageData.character}:</span></p>`;
+
+            if (stageData.type === "intro" || stageData.type === "conclusion") {
+                html += `<div class="text-lg text-center space-y-4">${stageData.text}</div>`;
+                html += `<div class="mt-8 text-center">
+                            <button id="mainButton" class="btn btn-primary">${stageData.buttonText}</button>
+                         </div>`;
+            } else if (stageData.type === "level") {
+                html += `<div class="mb-4 p-4 bg-indigo-50 border border-indigo-200 rounded-lg text-indigo-700">${stageData.explanation}</div>`;
+                
+                // Display current task
+                const task = stageData.tasks[currentTaskIndex];
+                html += `<div id="taskArea">
+                            <p class="mb-2 text-md">${task.instruction}</p>
+                            <textarea id="userInput" class="border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" placeholder="${task.placeholder}"></textarea>
+                            <button id="submitTaskButton" class="btn btn-primary w-full sm:w-auto">Submit Answer</button>
+                            <div id="feedbackArea" class="feedback mt-4"></div>
+                         </div>`;
+                
+                // "Next Task" or "Next Level" button
+                html += `<div id="navigationArea" class="mt-6 text-right" style="display: none;">
+                            <button id="nextButton" class="btn btn-secondary"></button>
+                         </div>`;
+            }
+            html += `</div>`; // Close fade-in div
+            gameArea.innerHTML = html;
+            attachEventListeners();
+        }
+
+        // Function to add event listeners
+        function attachEventListeners() {
+            const stageData = gameData[currentStageIndex];
+
+            if (stageData.type === "intro" || stageData.type === "conclusion") {
+                const mainButton = document.getElementById('mainButton');
+                mainButton.onclick = () => {
+                    if (stageData.type === "conclusion") {
+                        currentStageIndex = 0; // Start over
+                    } else {
+                        currentStageIndex++;
+                    }
+                    currentTaskIndex = 0; // Reset task index
+                    renderStage();
+                };
+            } else if (stageData.type === "level") {
+                const submitTaskButton = document.getElementById('submitTaskButton');
+                const userInput = document.getElementById('userInput');
+                const feedbackArea = document.getElementById('feedbackArea');
+                const navigationArea = document.getElementById('navigationArea');
+                const nextButton = document.getElementById('nextButton');
+
+                submitTaskButton.onclick = () => {
+                    const task = stageData.tasks[currentTaskIndex];
+                    const userAnswer = userInput.value.trim();
+                    
+                    feedbackArea.innerHTML = ''; // Clear previous feedback
+                    feedbackArea.classList.remove('feedback-good', 'feedback-improve', 'hidden');
+
+
+                    if (userAnswer) {
+                        feedbackArea.innerHTML = `<p class="font-semibold">Great job!</p>${task.feedbackGood}`;
+                        feedbackArea.classList.add('feedback-good');
+                        userInput.disabled = true; // Disable input field after answering
+                        submitTaskButton.disabled = true; // Disable submit button
+                        submitTaskButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+
+                        navigationArea.style.display = 'block';
+                        if (currentTaskIndex < stageData.tasks.length - 1) {
+                            nextButton.textContent = "Next Task";
+                        } else {
+                            nextButton.textContent = stageData.buttonText;
+                        }
+                    } else {
+                        feedbackArea.innerHTML = `<p class="font-semibold">Try again!</p>${task.feedbackImprove}`;
+                        feedbackArea.classList.add('feedback-improve');
+                    }
+                    feedbackArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                };
+
+                nextButton.onclick = () => {
+                    if (currentTaskIndex < stageData.tasks.length - 1) {
+                        currentTaskIndex++;
+                        renderStage(); 
+                    } else {
+                        currentStageIndex++;
+                        currentTaskIndex = 0;
+                        renderStage();
+                    }
+                };
+            }
+        }
+
+        // Start the game
+        renderStage();
+    </script>
+</body>
+</html>
